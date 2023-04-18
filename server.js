@@ -6,6 +6,7 @@ const credentials = require('./middlewares/credentials');
 const express = require('express');
 const mongoose = require('mongoose');
 const verifyJWT = require('./middlewares/verifyJWT');
+const {errorHandler} = require('./middlewares/errorMiddleware');
 require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5500;
@@ -37,6 +38,8 @@ app.use('/auth', require('./routes/auth'));
 app.use(verifyJWT);
 
 app.use('/manage-room', require('./routes/manageRoom'));
+
+app.use(errorHandler);
 
 mongoose.connection.once('open', () => {
     console.log('Connected to MongoDB');
