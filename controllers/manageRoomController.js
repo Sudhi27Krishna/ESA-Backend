@@ -3,15 +3,11 @@ const asyncHandler = require('express-async-handler');
 
 const handleRoom = async (req, res) => {
     const { room_no, floor_no, block, capacity } = req.body;
-    const duplicate = await Room.findOne({
-        $and: [
-            { room_no: room_no }, { user: req.user.id }
-        ]
-    }).exec();
+    const duplicate = await Room.findOne({ $and: [{ room_no: room_no }, { user: req.user.id }] }).exec();
 
     if (duplicate) {
         res.status(409);
-        throw new Error('room already addedd');
+        throw new Error('Room already added');
 
     }
 
@@ -38,15 +34,14 @@ const deleteRooms = asyncHandler(async (req, res) => {
     const room = req.body;
     if (!room) {
         res.status(400);
-        throw new Error('please enter the room number');
+        throw new Error('Please enter the room number');
     }
-    //find room enterd by that user
-    const result = await Room.findOne({ $and: [{ room_no: room.room}, { user: req.user.id }] }).exec();
+    //find room entered by that user
+    const result = await Room.findOneAndDelete({ room_no: room.room }, { user: req.user.id});
     if (!result) {
         res.status(400);
-        throw new Error('room not found');
+        throw new Error('Room not found');
     }
-    await result.deleteOne();
     res.status(200).json({ roomDeleted: room.room });
 
 });
