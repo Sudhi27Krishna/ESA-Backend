@@ -3,9 +3,17 @@ const asyncHandler = require('express-async-handler');
 
 const handleRoom = async (req, res) => {
     const { room_no, floor_no, block, capacity } = req.body;
-    const duplicate = await Room.findOne({ room_no: room_no }).exec();
+    const duplicate = await Room.findOne({ 
+        $and:[
+          {room_no:room_no},{user:req.user.id}
+        ]
+        }).exec();
 
-    if (duplicate) return res.sendStatus(409);
+    if (duplicate) {
+        res.status(409);
+        throw new Error('room already addedd');
+
+    }
 
     try {
         const createdRoom = await Room.create({ user: req.user.id, room_no, floor_no, block, capacity });
