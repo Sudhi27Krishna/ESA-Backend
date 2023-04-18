@@ -29,8 +29,4 @@ const RoomSchema = new mongoose.Schema({
     }
 });
 
-RoomSchema.pre('save', function (next) {
-    next();
-});
-
 module.exports = new mongoose.model('Room', RoomSchema);
