@@ -13,7 +13,7 @@ const handleLogin = async (req, res) => {
     const match = await bcrypt.compare(pwd, foundUser.password);
 
     if (match) {
-        const accessToken = jwt.sign({id: foundUser._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+        const accessToken = jwt.sign({ id: foundUser._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
         const refreshToken = jwt.sign({ id: foundUser.id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
 
         // saving refesh token with the current user
