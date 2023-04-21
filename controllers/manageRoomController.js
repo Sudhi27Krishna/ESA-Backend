@@ -14,7 +14,7 @@ const handleRoom = async (req, res) => {
     try {
         const createdRoom = await Room.create({ user: req.user.id, room_no, floor_no, block, capacity });
         console.log(createdRoom);
-        res.status(201).json({ 'success': `Room ${createdRoom.room_no} added successfully.` });
+        res.status(201).json(createdRoom);
     }
     catch (err) {
         console.log(err);
