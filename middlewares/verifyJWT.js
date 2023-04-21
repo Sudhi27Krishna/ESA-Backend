@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 
 const verifyJWT = (req, res, next) => {
@@ -10,12 +9,15 @@ const verifyJWT = (req, res, next) => {
     jwt.verify(
         token,
         process.env.ACCESS_TOKEN_SECRET,
-        asyncHandler(async (err, decoded) => {
+        async (err, decoded) => {
             if (err) return res.sendStatus(403); // invalid token
-            req.user = await User.findById(decoded.id).select('-password');
-            next();
-        })
-    );
+            try {
+                req.user = await User.findById(decoded.id).select('-password');
+                next();
+            } catch (error) {
+                res.status(500).json({ 'message': err.message });
+            }
+        });
 }
 
 module.exports = verifyJWT;

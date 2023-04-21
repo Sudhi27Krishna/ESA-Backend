@@ -1,15 +1,15 @@
 const Room = require('../models/Room');
-const asyncHandler = require('express-async-handler');
 
 const handleRoom = async (req, res) => {
     const { room_no, floor_no, block, capacity } = req.body;
+
+    if (!room_no || !floor_no || !block || !capacity) {
+        return res.status(400).json({ 'failure': 'Please make sure all fields are filled with values' });
+    }
+
     const duplicate = await Room.findOne({ $and: [{ room_no: room_no }, { user: req.user.id }] }).exec();
 
-    if (duplicate) {
-        res.status(409);
-        throw new Error('Room already added');
-
-    }
+    if (duplicate) return res.status(409).json({ 'failure': 'Room already added' });
 
     try {
         const createdRoom = await Room.create({ user: req.user.id, room_no, floor_no, block, capacity });
@@ -22,28 +22,34 @@ const handleRoom = async (req, res) => {
     }
 }
 
-
-
-const getRooms = asyncHandler(async (req, res) => {
-    const rooms = await Room.find({ user: req.user.id });
-    res.status(200).json(rooms);
-});
-
-
-const deleteRooms = asyncHandler(async (req, res) => {
-    const room = req.body;
-    if (!room) {
-        res.status(400);
-        throw new Error('Please enter the room number');
+const getRooms = async (req, res) => {
+    try {
+        const rooms = await Room.find({ user: req.user.id });
+        res.status(200).json(rooms);
+    } catch (err) {
+        res.status(500).json({ 'message': err.message });
     }
+};
+
+
+const deleteRooms = async (req, res) => {
+    const { room_no } = req.body;
+    if (!room_no) {
+        res.status(400).json({ 'failure': 'Please enter the room number' });
+    }
+
     //find room entered by that user
-    const result = await Room.findOneAndDelete({ room_no: room.room }, { user: req.user.id});
-    if (!result) {
-        res.status(400);
-        throw new Error('Room not found');
+    try {
+        const result = await Room.findOne({ $and: [{ room_no: room_no }, { user: req.user.id }] }).exec();
+        if (!result) {
+            res.status(404).json({ 'failure': 'Room not found' });
+        }
+        
+        const deletedRoom = await Room.deleteOne({ $and: [{ room_no: room_no }, { user: req.user.id }] });
+        res.status(201).json({ 'success': `Room ${deletedRoom.room_no} deleted successfully.` });
+    } catch (err) {
+        res.status(500).json({ 'message': err.message });
     }
-    res.status(200).json({ roomDeleted: room.room });
-
-});
+};
 
 module.exports = { handleRoom, getRooms, deleteRooms };
