@@ -4,6 +4,6 @@ const manageRoomController = require('../controllers/manageRoomController');
 
 router.post('/', manageRoomController.handleRoom)
     .get('/', manageRoomController.getRooms)
-    .delete('/', manageRoomController.deleteRooms);
+    .delete('/:id', manageRoomController.deleteRooms);
 
 module.exports = router;

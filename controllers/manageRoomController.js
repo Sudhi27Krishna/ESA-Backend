@@ -33,20 +33,20 @@ const getRooms = async (req, res) => {
 
 
 const deleteRooms = async (req, res) => {
-    const { room_no } = req.body;
+    const room_no = req.params.id;
     if (!room_no) {
-        res.status(400).json({ 'failure': 'Please enter the room number' });
+        return res.status(400).json({ 'failure': 'Please enter the room number' });
     }
 
     //find room entered by that user
     try {
         const result = await Room.findOne({ $and: [{ room_no: room_no }, { user: req.user.id }] }).exec();
         if (!result) {
-            res.status(404).json({ 'failure': 'Room not found' });
+            return res.status(404).json({ 'failure': 'Room not found' });
         }
-        
-        const deletedRoom = await Room.deleteOne({ $and: [{ room_no: room_no }, { user: req.user.id }] });
-        res.status(201).json({ 'success': `Room ${deletedRoom.room_no} deleted successfully.` });
+
+        await Room.deleteOne({ $and: [{ room_no: room_no }, { user: req.user.id }] });
+        res.sendStatus(201);
     } catch (err) {
         res.status(500).json({ 'message': err.message });
     }
