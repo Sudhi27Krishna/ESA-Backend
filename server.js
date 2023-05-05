@@ -37,6 +37,7 @@ app.use('/refresh', require('./routes/refresh'));
 app.use(verifyJWT);
 
 app.use('/manage-room', require('./routes/manageRoom'));
+app.use('/university-exam', require('./routes/universityExam'));
 
 mongoose.connection.once('open', () => {
     console.log('Connected to MongoDB');
