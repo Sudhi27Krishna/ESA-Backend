@@ -1,6 +1,6 @@
 const Slot = require('../models/Slot');
 
-const getsub = async (req, res) => {
+const getSubcode = async (req, res) => {
     const { sem, branch, slot } = req.body;
     if (!branch || !slot) return res.sendStatus(400).json({ 'message': 'provide branch and slot' });
     //enter branch and slot in capital letters
@@ -16,4 +16,4 @@ const getsub = async (req, res) => {
 
 
 
-module.exports = { getsub };
+module.exports = { getSubcode };
