@@ -17,16 +17,16 @@ const getSubcode = async (req, res) => {
 };
 
 const addSchedule = async (req, res) => {
-    const { sem, date, branch, slot, subcode } = req.body;
+    const { sem, date, time, branch, slot, subcode } = req.body;
     const user = req.user.username;
 
     try {
-        const existingSchedule = await Schedule.findOne({ user: user, sem: sem, date: date, branch: branch, slot: slot, subcode: subcode });
+        const existingSchedule = await Schedule.findOne({ user: user, sem: sem, date: date, time: time, branch: branch, slot: slot, subcode: subcode });
         if (existingSchedule) {
             return res.status(409).send('Schedule already exists');
         }
 
-        const schedule = new Schedule({ user: user, sem: sem, date: date, branch: branch, slot: slot, subcode: subcode });
+        const schedule = new Schedule({ user: user, sem: sem, date: date, time: time, branch: branch, slot: slot, subcode: subcode });
         await schedule.save();
         res.status(201).send(schedule);
     } catch (error) {
