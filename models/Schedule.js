@@ -19,7 +19,7 @@ const ScheduleSchema = new mongoose.Schema({
     time: {
         type: String,
         required: [true, 'Provide Time'],
-        index: { expires: '10d' },
+        
     },
     branch: {
         type: String,

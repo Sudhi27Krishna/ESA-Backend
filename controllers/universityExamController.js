@@ -26,7 +26,9 @@ const addSchedule = async (req, res) => {
         }
 
         const createdSchedule = await Schedule.create({ user: user, sem: sem, date: date, time: time, branch: branch, slot: slot, subcode: subcode });
-        res.status(201).send(createdSchedule);
+        // send response with formatted date, format is depends on users locale setting
+        const formattedDate = createdSchedule.date.toLocaleDateString('en-GB');
+        res.status(201).send({ ...createdSchedule._doc, date: formattedDate });
     } catch (error) {
         res.status(400).send(error);
     }
