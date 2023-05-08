@@ -1,7 +1,6 @@
 const Slot = require('../models/Slot');
 const Schedule = require('../models/Schedule');
 
-
 const getSubcode = async (req, res) => {
     const { sem, branch, slot } = req.query;
     if (!branch || !slot) return res.status(400).json({ 'message': 'provide branch and slot' });
@@ -26,13 +25,11 @@ const addSchedule = async (req, res) => {
             return res.status(409).send('Schedule already exists');
         }
 
-        const schedule = new Schedule({ user: user, sem: sem, date: date, time: time, branch: branch, slot: slot, subcode: subcode });
-        await schedule.save();
-        res.status(201).send(schedule);
+        const createdSchedule = await Schedule.create({ user: user, sem: sem, date: date, time: time, branch: branch, slot: slot, subcode: subcode });
+        res.status(201).send(createdSchedule);
     } catch (error) {
         res.status(400).send(error);
     }
-
 }
 
 const viewSchedules = async (req, res) => {
