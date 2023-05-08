@@ -1,6 +1,6 @@
 const Slot = require('../models/Slot');
 const Schedule = require('../models/Schedule');
-
+const path = require('path');
 
 const getSubcode = async (req, res) => {
     const { sem, branch, slot } = req.query;
@@ -68,6 +68,21 @@ const deleteSchedule = async (req, res) => {
     }
 }
 
+const fileUpload = (req, res) => {
+    const files = req.files
+        console.log(files)
 
+        Object.keys(files).forEach(key => {
+            // filepath needs to be changed
+            const filepath = path.join(__dirname, 'uploadedExcels', files[key].name);
+            files[key].mv(filepath, (err) => {
+                if(err) return res.status(500).json({status: "error", message: err});
+            })
+        })
 
-module.exports = { getSubcode, addSchedule, viewSchedules, deleteSchedule };
+        manipulate(); // function for manipulation, needs to changed
+
+        return res.json({ status: 'success', message: Object.keys(files).toString() });
+}
+
+module.exports = { getSubcode, addSchedule, viewSchedules, deleteSchedule, fileUpload };
