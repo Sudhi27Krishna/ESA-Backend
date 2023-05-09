@@ -1,6 +1,5 @@
 const Slot = require('../models/Slot');
 const Schedule = require('../models/Schedule');
-const fileUpload = require('express-fileupload');
 const path = require('path');
 
 const getSubcode = async (req, res) => {
@@ -69,21 +68,21 @@ const deleteSchedule = async (req, res) => {
     }
 }
 
-const fileUpload = (req, res) => {
+const uploadFile = (req, res) => {
     const files = req.files
-        console.log(files)
+    console.log(files)
 
-        Object.keys(files).forEach(key => {
-            // filepath needs to be changed
-            const filepath = path.join(__dirname, 'uploadedExcels', files[key].name);
-            files[key].mv(filepath, (err) => {
-                if(err) return res.status(500).json({status: "error", message: err});
-            })
+    Object.keys(files).forEach(key => {
+        // filepath needs to be changed
+        const filepath = path.join(__dirname, 'uploadedExcels', files[key].name);
+        files[key].mv(filepath, (err) => {
+            if (err) return res.status(500).json({ status: "error", message: err });
         })
+    })
 
-        manipulate(); // function for manipulation, needs to changed
+    manipulate(); // function for manipulation, needs to changed
 
-        return res.json({ status: 'success', message: Object.keys(files).toString() });
+    return res.json({ status: 'success', message: Object.keys(files).toString() });
 }
 
-module.exports = { getSubcode, addSchedule, viewSchedules, deleteSchedule, fileUpload };
+module.exports = { getSubcode, addSchedule, viewSchedules, deleteSchedule, uploadFile };

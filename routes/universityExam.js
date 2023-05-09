@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const fileUpload = require('express-fileupload');
 const univeristyExamController = require('../controllers/universityExamController');
 const filePayloadExists = require('../middlewares/filePayloadExists');
 const fileExtLimiter = require('../middlewares/fileExtLimiter');
@@ -11,7 +12,7 @@ router.get('/', univeristyExamController.getSubcode)
         filePayloadExists,
         fileExtLimiter([".xlsx"]),
         fileSizeLimiter,
-        univeristyExamController.fileUpload)
+        univeristyExamController.uploadFile)
       .get('/schedule', univeristyExamController.viewSchedules)
       .delete('/:id', univeristyExamController.deleteSchedule);
 
