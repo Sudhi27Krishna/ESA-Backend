@@ -1,5 +1,6 @@
 const Slot = require('../models/Slot');
 const Schedule = require('../models/Schedule');
+const fileUpload = require('express-fileupload');
 const path = require('path');
 
 const getSubcode = async (req, res) => {
@@ -26,13 +27,13 @@ const addSchedule = async (req, res) => {
             return res.status(409).send('Schedule already exists');
         }
 
-        const schedule = new Schedule({ user: user, sem: sem, date: date, time: time, branch: branch, slot: slot, subcode: subcode });
-        await schedule.save();
-        res.status(201).send(schedule);
+        const createdSchedule = await Schedule.create({ user: user, sem: sem, date: date, time: time, branch: branch, slot: slot, subcode: subcode });
+        // send response with formatted date, format is depends on users locale setting
+        const formattedDate = createdSchedule.date.toLocaleDateString('en-GB');
+        res.status(201).send({ ...createdSchedule._doc, date: formattedDate });
     } catch (error) {
         res.status(400).send(error);
     }
-
 }
 
 const viewSchedules = async (req, res) => {
