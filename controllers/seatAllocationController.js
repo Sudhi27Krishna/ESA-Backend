@@ -3,7 +3,7 @@ const Room = require('../models/Room');
 
 const dates = async (req, res) => {
     try {
-        const dates = await Schedule.distinct('date');
+        const dates = await Schedule.distinct('date', { user: req.user.username });
         const sortedDates = dates.sort((a, b) => new Date(a) - new Date(b));
         const formattedDates = sortedDates.map(date => {
             const d = new Date(date);
@@ -20,12 +20,18 @@ const dates = async (req, res) => {
 
 const getExams = async (req, res) => {
     const { date, time } = req.query;
+    const user = req.user.username;
     if (!date || !time) {
         return res.status(400).json({ 'message': 'provide date and time' });
     }
 
     try {
-        const schedules = await Schedule.find({ date, time }).select('sem branch slot').lean();
+        const [day, month, year] = date.split('-');
+
+        // Create a new Date object using the day, month, and year
+        const dateObject = new Date(`${day}-${month}-${year}`);
+        
+        const schedules = await Schedule.find({ date: dateObject, time: time, user: user }).select('sem branch slot').lean();
         //console.log(schedules);
         // Remove duplicates
         const exams = schedules.reduce((acc, { sem, branch, slot }) => {
