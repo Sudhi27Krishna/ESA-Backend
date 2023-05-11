@@ -1,6 +1,23 @@
 const Schedule = require('../models/Schedule');
 const Room = require('../models/Room');
 
+const dates = async (req, res) => {
+    try {
+        const dates = await Schedule.distinct('date');
+        const sortedDates = dates.sort((a, b) => new Date(a) - new Date(b));
+        const formattedDates = sortedDates.map(date => {
+            const d = new Date(date);
+            const day = d.getDate().toString().padStart(2, '0');
+            const month = (d.getMonth() + 1).toString().padStart(2, '0');
+            const year = d.getFullYear();
+            return `${day}-${month}-${year}`;
+        });
+        return res.status(200).send(formattedDates);
+    } catch (err) {
+        res.status(500).json({ 'message': err.message });
+    }
+};
+
 const getExams = async (req, res) => {
     const { date, time } = req.query;
     if (!date || !time) {
@@ -37,4 +54,4 @@ const getRooms = async (req, res) => {
 
 };
 
-module.exports = { getExams, getRooms };
+module.exports = { getExams, getRooms, dates };
