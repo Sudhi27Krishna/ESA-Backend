@@ -1,9 +1,11 @@
 const Schedule = require('../models/Schedule');
 const Room = require('../models/Room');
 
-const dates = async (req, res) => {
+const getDates = async (req, res) => {
+    const user = req.user.username;
+
     try {
-        const dates = await Schedule.distinct('date');
+        const dates = await Schedule.distinct('date', { user });
         const sortedDates = dates.sort((a, b) => new Date(a) - new Date(b));
         const formattedDates = sortedDates.map(date => {
             const d = new Date(date);
@@ -20,19 +22,21 @@ const dates = async (req, res) => {
 
 const getExams = async (req, res) => {
     const { date, time } = req.query;
+    console.log(req.query);
+    const user = req.user.username;
     if (!date || !time) {
         return res.status(400).json({ 'message': 'provide date and time' });
     }
 
     try {
-        const schedules = await Schedule.find({ date, time }).select('sem branch slot').lean();
-        //console.log(schedules);
-        // Remove duplicates
+        const formattedDate = date.split('-').reverse().join('-');
+        const dateObject = new Date(formattedDate).toISOString();
+
+        const schedules = await Schedule.find({ date: dateObject, time: time, user: user }).select('sem branch slot').lean();
+
         const exams = schedules.reduce((acc, { sem, branch, slot }) => {
-            const exam = `${sem}-${branch}-${slot}`;
-            if (!acc.includes(exam)) {
-                acc.push(exam);
-            }
+            const exam = `S${sem}-${branch}-${slot}`;
+            acc.push(exam);
             return acc;
         }, []);
 
@@ -54,4 +58,4 @@ const getRooms = async (req, res) => {
 
 };
 
-module.exports = { getExams, getRooms, dates };
+module.exports = { getExams, getRooms, getDates };
