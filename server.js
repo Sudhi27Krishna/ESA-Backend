@@ -39,6 +39,7 @@ app.use(verifyJWT);
 
 app.use('/manage-room', require('./routes/manageRoom'));
 app.use('/university-exam', require('./routes/universityExam'));
+app.use('/seat-allocation', require('./routes/seatAllocation'));
 
 mongoose.connection.once('open', () => {
     console.log('Connected to MongoDB');
