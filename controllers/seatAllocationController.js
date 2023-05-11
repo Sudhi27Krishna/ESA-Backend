@@ -1,9 +1,6 @@
 const Schedule = require('../models/Schedule');
 const Room = require('../models/Room');
 
-
-
-
 const getExams = async (req, res) => {
     const { date, time } = req.query;
     if (!date || !time) {
@@ -29,23 +26,15 @@ const getExams = async (req, res) => {
     }
 };
 
-
-
-
-
 const getRooms = async (req, res) => {
-
     const user = req.user._id;
     try {
         const rooms = await Room.find({ user }).select('room_no capacity');
-        const roomCapacities = rooms.map(({ room_no, capacity }) => [room_no, capacity]);
-        return res.status(200).json(roomCapacities);
-      } catch (error) {
-        console.log(error);
-        throw new Error('Failed to get room capacities');
-      }
+        return res.status(200).json(rooms);
+    } catch (error) {
+        res.status(500).json({ 'message': err.message });
+    }
 
 };
-
 
 module.exports = { getExams, getRooms };
