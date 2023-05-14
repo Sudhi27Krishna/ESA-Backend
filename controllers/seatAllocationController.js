@@ -40,6 +40,10 @@ const getExams = async (req, res) => {
             return acc;
         }, []);
 
+        if(exams?.length === 0){
+            exams.push("No exams scheduled");
+        }
+
         return res.status(200).json(exams);
     } catch (error) {
         console.log(error);
