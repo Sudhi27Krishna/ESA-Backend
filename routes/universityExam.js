@@ -8,7 +8,7 @@ const fileSizeLimiter = require('../middlewares/fileSizeLimiter');
 
 router.get('/', univeristyExamController.getSubcode)
       .post('/', univeristyExamController.addSchedule)
-      .post('/save', fileUpload({ createParentPath: true }),
+      .post('/file-upload', fileUpload({ createParentPath: true }),
         filePayloadExists,
         fileExtLimiter([".xlsx"]),
         fileSizeLimiter,
