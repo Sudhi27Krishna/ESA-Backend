@@ -21,7 +21,7 @@ const addSchedule = async (req, res) => {
     const user = req.user.username;
 
     try {
-        const existingSchedule = await Schedule.findOne({ user: user, sem: sem, date: date, time: time, branch: branch, slot: slot, subcode: subcode });
+        const existingSchedule = await Schedule.findOne({$or: [{ user: user, sem: sem, date: date, time: time, branch: branch, slot: slot, subcode: subcode }, { user: user, sem: sem, date: date, branch: branch }]});
         if (existingSchedule) {
             return res.status(409).send('Schedule already exists');
         }
