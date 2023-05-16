@@ -2,7 +2,6 @@ const Schedule = require('../models/Schedule');
 const Room = require('../models/Room');
 const Allocations = require('../models/Allocations');
 
-
 const getDates = async (req, res) => {
     const user = req.user.username;
 
@@ -42,8 +41,6 @@ const getExams = async (req, res) => {
             return acc;
         }, []);
 
-
-
         if (exams?.length === 0) {
             exams.push("No exams scheduled");
         }
@@ -66,13 +63,13 @@ const getRooms = async (req, res) => {
     } catch (error) {
         res.status(500).json({ 'message': err.message });
     }
-
 };
 
-const setAllocation = async (req, res) => {
+const createAllocation = async (req, res) => {
     const user = req.user.username;
-    const { date, time, rooms } = req.body;
-    if (!date || !time || !rooms) {
+    const { date, time, rooms, details } = req.body;
+    console.log(req.body);
+    if (!date || !time || !rooms || !details) {
         return res.status(400).json({ 'message': 'provide date, time and rooms' });
     }
     const formattedDate = date.split('-').reverse().join('-');
@@ -102,10 +99,9 @@ const setAllocation = async (req, res) => {
         return res.status(500).json({ 'message': error.message });
 
     }
-
 };
 
-const getAllocation = async(req,res) =>{
+const getAllocation = async (req, res) => {
     const { date, time } = req.query;
     console.log(req.query);
     const user = req.user.username;
@@ -115,16 +111,13 @@ const getAllocation = async(req,res) =>{
     try {
         const formattedDate = date.split('-').reverse().join('-');
         const dateObject = new Date(formattedDate).toISOString();
-        const allocations = await Allocations.find({date:dateObject,time:time}).select('rooms').lean();
+        const allocations = await Allocations.find(user, { date: dateObject, time: time }).select('rooms').lean();
         const rooms = allocations.flatMap(allocation => allocation.rooms);
         return res.status(200).json(rooms);
     }
-    catch(error)
-    {
-       return res.status(500).json({'message':error.message});
+    catch (error) {
+        return res.status(500).json({ 'message': error.message });
     }
-
-
 };
 
-module.exports = { getExams, getRooms, getDates, setAllocation, getAllocation };
+module.exports = { getExams, getRooms, getDates, createAllocation, getAllocation };
