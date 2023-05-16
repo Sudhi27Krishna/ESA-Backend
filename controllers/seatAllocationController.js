@@ -1,5 +1,7 @@
 const Schedule = require('../models/Schedule');
 const Room = require('../models/Room');
+const Allocations = require('../models/Allocations');
+
 
 const getDates = async (req, res) => {
     const user = req.user.username;
@@ -32,7 +34,7 @@ const getExams = async (req, res) => {
         const formattedDate = date.split('-').reverse().join('-');
         const dateObject = new Date(formattedDate).toISOString();
 
-        const schedules = await Schedule.find({ date: dateObject, time: time, user: user }).select('sem branch slot').lean();
+        const schedules = await Schedule.find({ date: dateObject, time: time, user: user }).select('sem branch slot subcode').lean();
 
         const exams = schedules.reduce((acc, { sem, branch, slot }) => {
             const exam = `S${sem}-${branch}-${slot}`;
@@ -40,11 +42,16 @@ const getExams = async (req, res) => {
             return acc;
         }, []);
 
-        if(exams?.length === 0){
+
+
+        if (exams?.length === 0) {
             exams.push("No exams scheduled");
         }
+        const details = schedules.map(({ sem, branch, slot, subcode }) => {
+            return { sem, branch, slot, subcode };
+        });
 
-        return res.status(200).json(exams);
+        return res.status(200).json({ exams, details });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ 'message': error.message });
@@ -62,4 +69,62 @@ const getRooms = async (req, res) => {
 
 };
 
-module.exports = { getExams, getRooms, getDates };
+const setAllocation = async (req, res) => {
+    const user = req.user.username;
+    const { date, time, rooms } = req.body;
+    if (!date || !time || !rooms) {
+        return res.status(400).json({ 'message': 'provide date, time and rooms' });
+    }
+    const formattedDate = date.split('-').reverse().join('-');
+    const dateObject = new Date(formattedDate).toISOString();
+    //console.log(dateObject)
+    try {
+        // First, find the schedule document that matches the given date, time, and subcode
+        const schedule = await Schedule.findOne({ user, date: dateObject, time });
+
+        // If a matching schedule document is found, create a new exam document with the required fields
+        if (schedule) {
+            const newAllocation = new Allocations({
+                date: dateObject,
+                time,
+                rooms,
+            });
+            await newAllocation.save();
+            // Return the newly created exam document or any other relevant data
+            res.json({ message: 'Allocation created successfully', Allocation: newAllocation });
+        }
+        else {
+            // If no matching schedule document is found, return an appropriate error message
+            res.status(404).json({ error: 'No schedule found for the given date and time' });
+        }
+
+    } catch (error) {
+        return res.status(500).json({ 'message': error.message });
+
+    }
+
+};
+
+const getAllocation = async(req,res) =>{
+    const { date, time } = req.query;
+    console.log(req.query);
+    const user = req.user.username;
+    if (!date || !time) {
+        return res.status(400).json({ 'message': 'provide date and time' });
+    }
+    try {
+        const formattedDate = date.split('-').reverse().join('-');
+        const dateObject = new Date(formattedDate).toISOString();
+        const allocations = await Allocations.find({date:dateObject,time:time}).select('rooms').lean();
+        const rooms = allocations.flatMap(allocation => allocation.rooms);
+        return res.status(200).json(rooms);
+    }
+    catch(error)
+    {
+       return res.status(500).json({'message':error.message});
+    }
+
+
+};
+
+module.exports = { getExams, getRooms, getDates, setAllocation, getAllocation };

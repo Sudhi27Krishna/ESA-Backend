@@ -14,7 +14,7 @@ const ScheduleSchema = new mongoose.Schema({
     date: {
         type: Date,
         required: [true, 'Provide Date'],
-        index: { expires: '10d' },
+        index: { expires: '100d' },
     },
     time: {
         type: String,
