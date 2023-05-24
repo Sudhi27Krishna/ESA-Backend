@@ -1,6 +1,9 @@
 const Schedule = require('../models/Schedule');
 const Room = require('../models/Room');
 const Allocations = require('../models/Allocations');
+const manipulate = require('../manipulate');
+
+let allocationDetails = {};
 
 const getDates = async (req, res) => {
     const user = req.user.username;
@@ -48,6 +51,7 @@ const getExams = async (req, res) => {
             return { sem, branch, slot, subcode };
         });
 
+
         return res.status(200).json({ exams, details });
     } catch (error) {
         console.log(error);
@@ -68,6 +72,7 @@ const getRooms = async (req, res) => {
 const createAllocation = async (req, res) => {
     const user = req.user.username;
     const { date, time, rooms, details } = req.body;
+    allocationDetails = req.body;
     console.log(req.body);
     if (!date || !time || !rooms || !details) {
         return res.status(400).json({ 'message': 'provide date, time and rooms' });
@@ -87,6 +92,9 @@ const createAllocation = async (req, res) => {
                 rooms,
             });
             await newAllocation.save();
+
+            manipulate();
+
             // Return the newly created exam document or any other relevant data
             res.json({ message: 'Allocation created successfully', Allocation: newAllocation });
         }
@@ -120,4 +128,4 @@ const getAllocation = async (req, res) => {
     }
 };
 
-module.exports = { getExams, getRooms, getDates, createAllocation, getAllocation };
+module.exports = { getExams, getRooms, getDates, createAllocation, getAllocation, allocationDetails };
