@@ -80,7 +80,7 @@ const uploadFile = (req, res) => {
         })
     })
 
-    console.log("I am in the file upload function."); // function for manipulation, needs to changed
+    //console.log("I am in the file upload function."); function for manipulation, needs to changed
 
     return res.json({ status: 'success', message: Object.keys(files).toString() });
 }
