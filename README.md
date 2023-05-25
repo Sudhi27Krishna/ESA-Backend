@@ -8,7 +8,7 @@
     ```
     mkdir updatedExcels
     ```
- 4. To run the server type the command and press <kbd>Enter</kbd>
+4. To run the server type the command and press <kbd>Enter</kbd>
   
     ```
     npm run dev
