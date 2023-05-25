@@ -1,8 +1,7 @@
 const { spawn } = require('child_process');
-const seatAllocationController = require('./controllers/seatAllocationController');
-const data = seatAllocationController.allocationDetails;
 
-const manipulate = () => {
+const manipulate = (data) => {
+    console.log(data);
     // Convert the data object to JSON string
     const jsonData = JSON.stringify(data);
 

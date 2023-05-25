@@ -3,8 +3,6 @@ const Room = require('../models/Room');
 const Allocations = require('../models/Allocations');
 const manipulate = require('../manipulate');
 
-let allocationDetails = {};
-
 const getDates = async (req, res) => {
     const user = req.user.username;
 
@@ -72,8 +70,7 @@ const getRooms = async (req, res) => {
 const createAllocation = async (req, res) => {
     const user = req.user.username;
     const { date, time, rooms, details } = req.body;
-    allocationDetails = req.body;
-    console.log(req.body);
+    // console.log(req.body);
     if (!date || !time || !rooms || !details) {
         return res.status(400).json({ 'message': 'provide date, time and rooms' });
     }
@@ -93,7 +90,7 @@ const createAllocation = async (req, res) => {
             });
             await newAllocation.save();
 
-            manipulate();
+            manipulate(req.body); // function for manipulating the uploadedExcel file for seat arrangement
 
             // Return the newly created exam document or any other relevant data
             res.json({ message: 'Allocation created successfully', Allocation: newAllocation });
@@ -128,4 +125,4 @@ const getAllocation = async (req, res) => {
     }
 };
 
-module.exports = { getExams, getRooms, getDates, createAllocation, getAllocation, allocationDetails };
+module.exports = { getExams, getRooms, getDates, createAllocation, getAllocation };
