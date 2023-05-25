@@ -13,9 +13,9 @@ const AllocationSchema = new mongoose.Schema({
 
     },
     rooms: {
-        type: [Number],
+        type: [{ room_no: String, capacity: Number }],
         required: [true, 'Provide room array'],
-    },   
+    },
 },
     { timestamps: true }
 );

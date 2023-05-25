@@ -25,7 +25,6 @@ const RoomSchema = new mongoose.Schema({
     capacity: {
         type: Number,
         require: [true, 'Please provide available seats'],
-        max: 30
     }
 });
 
