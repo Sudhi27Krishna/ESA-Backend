@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const ScheduleSchema = new mongoose.Schema({
-
     user: {
         type: String,
         required: true,

@@ -1,6 +1,7 @@
 const Schedule = require('../models/Schedule');
 const Room = require('../models/Room');
 const Allocations = require('../models/Allocations');
+const RoomBooking = require('../models/RoomBooking');
 const manipulate = require('../manipulate');
 
 const getDates = async (req, res) => {
@@ -84,6 +85,7 @@ const createAllocation = async (req, res) => {
         // If a matching schedule document is found, create a new exam document with the required fields
         if (schedule) {
             const newAllocation = new Allocations({
+                user: req.user.username,
                 date: dateObject,
                 time,
                 rooms,
@@ -91,6 +93,11 @@ const createAllocation = async (req, res) => {
             await newAllocation.save();
 
             manipulate(req.body); // function for manipulating the uploadedExcel file for seat arrangement
+
+            const roomNumbers = rooms.map((room) => room.room_no);
+
+            // Creating the rooms booked for a particular date
+            await RoomBooking.create({ user: req.user.username, date: dateObject, rooms: roomNumbers });
 
             // Return the newly created exam document or any other relevant data
             res.json({ message: 'Allocation created successfully', Allocation: newAllocation });
@@ -102,9 +109,28 @@ const createAllocation = async (req, res) => {
 
     } catch (error) {
         return res.status(500).json({ 'message': error.message });
-
     }
 };
+
+const getRoomsBooked = async (req, res) => {
+    const { date } = req.query;
+    const user = req.user.username;
+
+    if (!date) {
+        return res.status(400).json({ 'message': 'Provide date' });
+    }
+
+    const formattedDate = date.split('-').reverse().join('-');
+    const dateObject = new Date(formattedDate).toISOString();
+
+    try {
+        const bookedRooms = await RoomBooking.findOne({ user, date: dateObject });
+        console.log(bookedRooms);
+        res.status(200).json(bookedRooms?.rooms);
+    } catch (error) {
+        return res.status(500).json({ 'message': error.message });
+    }
+}
 
 const getAllocation = async (req, res) => {
     const { date, time } = req.query;
@@ -125,4 +151,4 @@ const getAllocation = async (req, res) => {
     }
 };
 
-module.exports = { getExams, getRooms, getDates, createAllocation, getAllocation };
+module.exports = { getExams, getRooms, getDates, createAllocation, getRoomsBooked, getAllocation };
