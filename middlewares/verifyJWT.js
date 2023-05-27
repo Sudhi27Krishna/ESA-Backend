@@ -15,7 +15,7 @@ const verifyJWT = (req, res, next) => {
                 req.user = await User.findById(decoded.id).select('-password');
                 next();
             } catch (error) {
-                res.status(500).json({ 'message': err.message });
+                res.status(500).json({ 'message': error.message });
             }
         });
 }

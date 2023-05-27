@@ -1,7 +1,11 @@
 const mongoose = require('mongoose');
 
 const AllocationSchema = new mongoose.Schema({
-
+    user: {
+        type: String,
+        required: true,
+        ref: 'User'
+    },
     date: {
         type: Date,
         required: [true, 'Provide Date'],
@@ -10,7 +14,6 @@ const AllocationSchema = new mongoose.Schema({
     time: {
         type: String,
         required: [true, 'Provide Time'],
-
     },
     rooms: {
         type: [{ room_no: String, capacity: Number }],
