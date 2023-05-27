@@ -11,6 +11,10 @@ const RoomBookingSchema = new mongoose.Schema({
         required: [true, 'Provide Date'],
         index: { expires: '100d' },
     },
+    time: {
+        type: String,
+        required: [true, 'Provide Time'],
+    },
     rooms: {
         type: [String],
         required: [true, 'Please provide rooms'],
