@@ -92,12 +92,12 @@ const createAllocation = async (req, res) => {
             });
             await newAllocation.save();
 
-            manipulate(req.body); // function for manipulating the uploadedExcel file for seat arrangement
+            // manipulate(req.body); // function for manipulating the uploadedExcel file for seat arrangement
 
             const roomNumbers = rooms.map((room) => room.room_no);
 
             // Creating the rooms booked for a particular date
-            await RoomBooking.create({ user: req.user.username, date: dateObject, rooms: roomNumbers });
+            await RoomBooking.create({ user: req.user.username, date: dateObject, time, rooms: roomNumbers });
 
             // Return the newly created exam document or any other relevant data
             res.json({ message: 'Allocation created successfully', Allocation: newAllocation });
@@ -113,7 +113,7 @@ const createAllocation = async (req, res) => {
 };
 
 const getRoomsBooked = async (req, res) => {
-    const { date } = req.query;
+    const { date, time } = req.query;
     const user = req.user.username;
 
     if (!date) {
@@ -124,7 +124,7 @@ const getRoomsBooked = async (req, res) => {
     const dateObject = new Date(formattedDate).toISOString();
 
     try {
-        const bookedRooms = await RoomBooking.findOne({ user, date: dateObject });
+        const bookedRooms = await RoomBooking.findOne({ user, date: dateObject, time });
         console.log(bookedRooms);
         res.status(200).json(bookedRooms?.rooms);
     } catch (error) {
