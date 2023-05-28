@@ -3,6 +3,12 @@ const Room = require('../models/Room');
 const Allocations = require('../models/Allocations');
 const RoomBooking = require('../models/RoomBooking');
 const manipulate = require('../manipulate');
+const fs = require('fs');
+const path = require('path');
+const nodemailer = require('nodemailer');
+
+const directoryPath = path.resolve(__dirname, '../updatedExcels');
+const fileNameRegex = /^[A-Za-z]+\.xlsx$/;
 
 const getDates = async (req, res) => {
     const user = req.user.username;
@@ -92,7 +98,7 @@ const createAllocation = async (req, res) => {
             });
             await newAllocation.save();
 
-            // manipulate(req.body); // function for manipulating the uploadedExcel file for seat arrangement
+            manipulate(req.body); // function for manipulating the uploadedExcel file for seat arrangement
 
             const roomNumbers = rooms.map((room) => room.room_no);
 
@@ -151,4 +157,58 @@ const getAllocation = async (req, res) => {
     }
 };
 
-module.exports = { getExams, getRooms, getDates, createAllocation, getRoomsBooked, getAllocation };
+const sendExcels = async (req, res) => {
+    const email = req.user.email;
+
+    try {
+        // Read the contents of the directory
+        const files = await fs.promises.readdir(directoryPath);
+
+        if (files.length === 0) {
+            return res.status(404).json({ message: 'No files found in the directory' });
+        }
+
+        // Delete files matching the regex pattern
+        const regex = new RegExp(fileNameRegex);
+        const deletedFiles = files.filter((file) => regex.test(file));
+        await Promise.all(deletedFiles.map((file) => fs.promises.unlink(path.join(directoryPath, file))));
+
+        // Create a Nodemailer transporter
+        const transporter = nodemailer.createTransport({
+            // Configure your email provider details here
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL,
+                pass: process.env.APP_PASSWORD
+            }
+        });
+
+        const attachments = files.map((file) => {
+            const filePath = path.join(directoryPath, file);
+            if (fs.existsSync(filePath)) {
+                return { path: filePath };
+            }
+            return null;
+        }).filter((attachment) => attachment !== null);
+
+
+        // Prepare the email message
+        const mailOptions = {
+            from: process.env.EMAIL,
+            to: email,
+            subject: 'Files from Directory',
+            text: 'Please find the files attached.',
+            attachments: attachments
+        };
+
+        // Send the email
+        await transporter.sendMail(mailOptions);
+
+        return res.status(200).json({ message: 'Email sent successfully' });
+    } catch (error) {
+        console.error('Error sending email:', error);
+        return res.status(500).json({ message: 'An error occurred while sending the email' });
+    }
+}
+
+module.exports = { getExams, getRooms, getDates, createAllocation, getRoomsBooked, getAllocation, sendExcels };
