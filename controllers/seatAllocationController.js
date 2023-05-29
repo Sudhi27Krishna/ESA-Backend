@@ -90,15 +90,18 @@ const createAllocation = async (req, res) => {
 
         // If a matching schedule document is found, create a new exam document with the required fields
         if (schedule) {
+
+            await manipulate(req.body); // function for manipulating the uploadedExcel file for seat arrangement
+
             const newAllocation = new Allocations({
                 user: req.user.username,
                 date: dateObject,
                 time,
                 rooms,
             });
+
             await newAllocation.save();
 
-            manipulate(req.body); // function for manipulating the uploadedExcel file for seat arrangement
 
             const roomNumbers = rooms.map((room) => room.room_no);
 
@@ -106,7 +109,7 @@ const createAllocation = async (req, res) => {
             await RoomBooking.create({ user: req.user.username, date: dateObject, time, rooms: roomNumbers });
 
             // Return the newly created exam document or any other relevant data
-            res.json({ message: 'Allocation created successfully', Allocation: newAllocation });
+            res.status(201).json({ message: 'Allocation created successfully', Allocation: newAllocation });
         }
         else {
             // If no matching schedule document is found, return an appropriate error message
@@ -196,13 +199,31 @@ const sendExcels = async (req, res) => {
         const mailOptions = {
             from: process.env.EMAIL,
             to: email,
-            subject: 'Files from Directory',
+            subject: 'Seat arrangement Excel Files',
             text: 'Please find the files attached.',
             attachments: attachments
         };
 
         // Send the email
-        await transporter.sendMail(mailOptions);
+        const sendMailPromise = new Promise((resolve, reject) => {
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(info);
+                }
+            });
+        });
+
+        await sendMailPromise;
+
+        // Delete the remaining files after the email is successfully sent
+        await Promise.all(files.map(async (file) => {
+            const filePath = path.join(directoryPath, file);
+            if (fs.existsSync(filePath)) {
+                await fs.promises.unlink(filePath);
+            }
+        }));
 
         return res.status(200).json({ message: 'Email sent successfully' });
     } catch (error) {
