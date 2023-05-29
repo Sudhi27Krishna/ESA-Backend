@@ -21,7 +21,7 @@ const addSchedule = async (req, res) => {
     const user = req.user.username;
 
     try {
-        const existingSchedule = await Schedule.findOne({$or: [{ user: user, sem: sem, date: date, time: time, branch: branch, slot: slot, subcode: subcode }, { user: user, sem: sem, date: date, branch: branch }]});
+        const existingSchedule = await Schedule.findOne({ $or: [{ user: user, sem: sem, date: date, time: time, branch: branch, slot: slot, subcode: subcode }, { user: user, sem: sem, date: date, branch: branch }] });
         if (existingSchedule) {
             return res.status(409).send('Schedule already exists');
         }
@@ -80,9 +80,7 @@ const uploadFile = (req, res) => {
         })
     })
 
-    console.log("I am in the file upload function."); // function for manipulation, needs to changed
-
-    return res.json({ status: 'success', message: Object.keys(files).toString() });
+    return res.status(201).json({ status: "success", message: Object.keys(files).toString() });
 }
 
 module.exports = { getSubcode, addSchedule, viewSchedules, deleteSchedule, uploadFile };
