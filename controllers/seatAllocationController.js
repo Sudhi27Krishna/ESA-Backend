@@ -6,6 +6,7 @@ const manipulate = require('../manipulate');
 const fs = require('fs');
 const path = require('path');
 const nodemailer = require('nodemailer');
+const totalCount = require('../totalCount');
 
 const directoryPath = path.resolve(__dirname, '../updatedExcels');
 const fileNameRegex = /^[A-Za-z]+\.xlsx$/;
@@ -56,8 +57,11 @@ const getExams = async (req, res) => {
             return { sem, branch, slot, subcode };
         });
 
+        const totalStudents = await totalCount({ details });
 
-        return res.status(200).json({ exams, details });
+        console.log(totalStudents);
+
+        return res.status(200).json({ exams, details, totalStudents });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ 'message': error.message });
@@ -225,7 +229,18 @@ const sendExcels = async (req, res) => {
             }
         }));
 
+        const folderPath = path.join(__dirname, '../uploadedExcels');
+        fs.rmdir(folderPath, { recursive: true }, (err) => {
+            if (err) {
+                console.error('Error deleting directory:', err);
+                return;
+            }
+
+            console.log('Directory deleted:', folderPath);
+        });
+
         return res.status(200).json({ message: 'Email sent successfully' });
+
     } catch (error) {
         console.error('Error sending email:', error);
         return res.status(500).json({ message: 'An error occurred while sending the email' });
