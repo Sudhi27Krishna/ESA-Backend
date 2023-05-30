@@ -1,6 +1,7 @@
 const Slot = require('../models/Slot');
 const Schedule = require('../models/Schedule');
 const path = require('path');
+const createBranches = require('../createBranches');
 
 const getSubcode = async (req, res) => {
     const { sem, branch, slot } = req.query;
@@ -68,7 +69,7 @@ const deleteSchedule = async (req, res) => {
     }
 }
 
-const uploadFile = (req, res) => {
+const uploadFile = async (req, res) => {
     const files = req.files;
     console.log(files);
 
@@ -79,6 +80,12 @@ const uploadFile = (req, res) => {
             if (err) return res.status(500).json({ status: "error", message: err });
         })
     })
+
+    try {
+        await createBranches();
+    } catch (error) {
+        return res.status(500).json({ status: "error", message: error });
+    }
 
     return res.status(201).json({ status: "success", message: Object.keys(files).toString() });
 }

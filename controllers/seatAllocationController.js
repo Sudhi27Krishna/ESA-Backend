@@ -225,7 +225,18 @@ const sendExcels = async (req, res) => {
             }
         }));
 
+        const folderPath = path.join(__dirname, '../uploadedExcels');
+        fs.rmdir(folderPath, { recursive: true }, (err) => {
+            if (err) {
+                console.error('Error deleting directory:', err);
+                return;
+            }
+
+            console.log('Directory deleted:', folderPath);
+        });
+
         return res.status(200).json({ message: 'Email sent successfully' });
+
     } catch (error) {
         console.error('Error sending email:', error);
         return res.status(500).json({ message: 'An error occurred while sending the email' });
