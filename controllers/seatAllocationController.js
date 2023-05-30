@@ -6,6 +6,7 @@ const manipulate = require('../manipulate');
 const fs = require('fs');
 const path = require('path');
 const nodemailer = require('nodemailer');
+const totalCount = require('../totalCount');
 
 const directoryPath = path.resolve(__dirname, '../updatedExcels');
 const fileNameRegex = /^[A-Za-z]+\.xlsx$/;
@@ -56,8 +57,11 @@ const getExams = async (req, res) => {
             return { sem, branch, slot, subcode };
         });
 
+        const totalStudents = await totalCount({ details });
 
-        return res.status(200).json({ exams, details });
+        console.log(totalStudents);
+
+        return res.status(200).json({ exams, details, totalStudents });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ 'message': error.message });
