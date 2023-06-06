@@ -1,8 +1,11 @@
 const { spawn } = require('node:child_process');
 
-async function createBranches() {
+async function createBranches(data) {
     return new Promise((resolve, reject) => {
-        const pythonProcess = spawn('python', ['branches.py']);
+        // Convert the data object to JSON string
+        const jsonData = JSON.stringify(data);
+        // Invoke the Python script with JSON data as an argument
+        const pythonProcess = spawn('python', ['branches.py', jsonData]);
 
         pythonProcess.stdout.on('data', (data) => {
             console.log(`stdout: ${data}`);
