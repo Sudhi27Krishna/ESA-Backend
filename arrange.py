@@ -15,14 +15,11 @@ date = data['date']
 time = data['time']
 rooms = data['rooms']
 details = data['details']
-s = set()
+slot_set = set()
 for i in range(len(details)):
-    s.add(details[i].get("slot"))
-# room_names = list()
-slot_list = list(s)
-# print(rooms)
-# print(details)
-# print(slot_list)
+    slot_set.add(details[i].get("slot"))
+slot_list = list(slot_set)
+
 
 for i in slot_list:
     input_slot = i
@@ -37,12 +34,14 @@ for i in slot_list:
     b = 1
     code_list = list()
     for i in range(len(details)):
-        if details[i].get("slot") == input_slot:
+        if (details[i].get("slot") == input_slot):
             code_list.append(details[i].get("branch"))
     print(code_list)
+    s = details[0].get("sem")
     for code in code_list:
         check_supply = 1
-        wb_branch = openpyxl.load_workbook('.\\updatedExcels\\'+code+'.xlsx')
+        wb_branch = openpyxl.load_workbook(
+            '.\\updatedExcels\\'+'S'+str(s)+'_'+code+'.xlsx')
         ws_branch_reg = wb_branch[input_slot]
         # CHECKING IF THERE IS SUPPLY STUDENTS OR NOT
         try:
@@ -86,26 +85,35 @@ for i in slot_list:
     j = 0
     p = 1
     ch = 0
-    for i in range(1, ws_slotMain.max_row+1, 16):
+    # cnt = 0
+    # print(ws_slotMain.max_row)
+    for i in range(1, ws_slotMain.max_row+1, 15):
+        # print(i,cnt)
         room_sheet = wb_slot[sh_nm[j]]
+        # print(sh_nm[j]+"  "+str(room_sheet.max_row))
         for r in range(1, 16):
             room_sheet.cell(row=p, column=1).value = ws_slotMain.cell(
                 row=(ch*15+r), column=1).value
             room_sheet.cell(row=p, column=2).value = ws_slotMain.cell(
                 row=(ch*15+r), column=2).value
             p += 1
+            # cnt+=1
         ch += 1
         if (ch >= max_sheets):
             p = 16
         else:
             p = 1
+        # print(sh_nm[j]+"  "+str(room_sheet.max_row))
         j = (ch) % max_sheets
+        # wb_slot.save('.\\updatedExcels\\'+date+'_'+time+'.xlsx')
     wb_slot.save('.\\updatedExcels\\'+date+'_'+time+'.xlsx')
+    # print(cnt)
     ch = 0
     # balance students to normal class
     for j in range(max_sheets-1, 1, -1):
         room_sheet = wb_slot[sh_nm[j]]
         if (room_sheet.max_row == 15):
+            # print("_________"+sh_nm[j]+"  "+str(room_sheet.max_row))
             p = 16
             for r in range(1, 16):
                 room_sheet.cell(row=p, column=1).value = ws_slot_splyMain.cell(

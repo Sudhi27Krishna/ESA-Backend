@@ -82,7 +82,7 @@ const uploadFile = async (req, res) => {
     })
 
     try {
-        await createBranches();
+        await createBranches(Object.keys(files));
     } catch (error) {
         return res.status(500).json({ status: "error", message: error });
     }

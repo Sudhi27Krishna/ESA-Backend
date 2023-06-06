@@ -168,6 +168,7 @@ const sendExcels = async (req, res) => {
     const email = req.user.email;
 
     try {
+        /*
         // Read the contents of the directory
         const files = await fs.promises.readdir(directoryPath);
 
@@ -179,6 +180,8 @@ const sendExcels = async (req, res) => {
         const regex = new RegExp(fileNameRegex);
         const deletedFiles = files.filter((file) => regex.test(file));
         await Promise.all(deletedFiles.map((file) => fs.promises.unlink(path.join(directoryPath, file))));
+
+        */
 
         // Create a Nodemailer transporter
         const transporter = nodemailer.createTransport({
@@ -221,6 +224,7 @@ const sendExcels = async (req, res) => {
 
         await sendMailPromise;
 
+        /*
         // Delete the remaining files after the email is successfully sent
         await Promise.all(files.map(async (file) => {
             const filePath = path.join(directoryPath, file);
@@ -229,15 +233,17 @@ const sendExcels = async (req, res) => {
             }
         }));
 
-        const folderPath = path.join(__dirname, '../uploadedExcels');
-        fs.rmdir(folderPath, { recursive: true }, (err) => {
-            if (err) {
-                console.error('Error deleting directory:', err);
-                return;
-            }
+        */
 
-            console.log('Directory deleted:', folderPath);
-        });
+        // const folderPath = path.join(__dirname, '../uploadedExcels');
+        // fs.rmdir(folderPath, { recursive: true }, (err) => {
+        //     if (err) {
+        //         console.error('Error deleting directory:', err);
+        //         return;
+        //     }
+
+        //     console.log('Directory deleted:', folderPath);
+        // });
 
         return res.status(200).json({ message: 'Email sent successfully' });
 

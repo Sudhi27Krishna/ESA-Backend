@@ -1,6 +1,7 @@
 const { spawn } = require('node:child_process');
 
 async function totalCount(data) {
+    console.log(data);
     return new Promise((resolve, reject) => {
         const jsonData = JSON.stringify(data);
         const pythonProcess = spawn('python', ['totalStudents.py', jsonData]);
