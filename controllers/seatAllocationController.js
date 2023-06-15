@@ -52,6 +52,7 @@ const getExams = async (req, res) => {
 
         if (exams?.length === 0) {
             exams.push("No exams scheduled");
+            return res.status(200).json({ exams, details: null, totalStudents: 0 });
         }
         const details = schedules.map(({ sem, branch, slot, subcode }) => {
             return { sem, branch, slot, subcode };
@@ -168,14 +169,16 @@ const sendExcels = async (req, res) => {
     const email = req.user.email;
 
     try {
-        /*
+
         // Read the contents of the directory
         const files = await fs.promises.readdir(directoryPath);
+        console.log(files);
 
         if (files.length === 0) {
             return res.status(404).json({ message: 'No files found in the directory' });
         }
 
+        /*
         // Delete files matching the regex pattern
         const regex = new RegExp(fileNameRegex);
         const deletedFiles = files.filter((file) => regex.test(file));
@@ -194,9 +197,11 @@ const sendExcels = async (req, res) => {
         });
 
         const attachments = files.map((file) => {
-            const filePath = path.join(directoryPath, file);
-            if (fs.existsSync(filePath)) {
-                return { path: filePath };
+            if (file.length > 10) {
+                const filePath = path.join(directoryPath, file);
+                if (fs.existsSync(filePath)) {
+                    return { path: filePath };
+                }
             }
             return null;
         }).filter((attachment) => attachment !== null);
