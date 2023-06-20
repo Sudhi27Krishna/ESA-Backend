@@ -38,6 +38,20 @@ for i in slot_list:
             # COUNT OF SUPPLY STUDENTS
             for r in range(1, ws_branch_sply.max_row+1):
                 noOfStudents += 1
-
-# NO: OF STUDENTS WRITING EXAM FOR A PARTICULAR SLOT
+# CALCULATING ROOM COUNT
+rem = noOfStudents%30
+noOfRooms30 = int(noOfStudents - rem)//30
+noOfRooms60 = 0
+if rem <= 10:
+    noOfRooms30-=1
+    noOfRooms60=1
+elif rem>=20:
+    noOfRooms30+=1
+else:
+    noOfRooms30-=2
+    noOfRooms60 = 2
+# NO: OF STUDENTS WRITING EXAM FOR A PARTICULAR SLOT 
 print(noOfStudents)
+# NO: OF 30 AND 60 CAPACITY ROOMS REQUIRED TO ALLOCATE THESE STUDENTS
+print(noOfRooms30)
+print(noOfRooms60)
