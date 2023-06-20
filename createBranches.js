@@ -1,5 +1,17 @@
 const { spawn } = require('node:child_process');
 const { promisify } = require('node:util');
+const fs = require('fs');
+
+const directoryPath = './updatedExcels';
+
+function createDirectoryIfNotExists(directoryPath) {
+  if (!fs.existsSync(directoryPath)) {
+    fs.mkdirSync(directoryPath);
+    console.log(`Directory created: ${directoryPath}`);
+  } else {
+    console.log(`Directory already exists: ${directoryPath}`);
+  }
+}
 
 const exec = promisify(require('node:child_process').exec);
 
@@ -30,6 +42,7 @@ async function ensurePackageInstalled(packageName) {
 }
 
 async function createBranches(data) {
+    createDirectoryIfNotExists(directoryPath);
     // Ensure openpyxl package is installed
     await ensurePackageInstalled('openpyxl');
     return new Promise((resolve, reject) => {

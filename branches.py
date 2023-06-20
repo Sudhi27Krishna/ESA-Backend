@@ -17,10 +17,13 @@ for sem in data:
 
     # IDENTIFYING BRANCHES
     branches = set()
-    for a in ws['B']:
+    for a in ws['D']:
         branches.add(a.value)
     # print(branches)
     branch_list = list(branches)
+    while None in branch_list:
+        # removing None from list using remove method
+        branch_list.remove(None)
     print(branch_list)
     code_list = list()
     sub_list = list()
@@ -33,17 +36,17 @@ for sem in data:
         # print(ws.max_row)
         print('\n', sub)
         for p in range(1, ws.max_row+1):
-            if (ws.cell(row=p, column=2).value == sub):
+            if (ws.cell(row=p, column=4).value == sub):
                 nm = ws.cell(row=p, column=1).value
                 regno = nm[-11:-1:1]
                 ws_branchMain.cell(row=r, column=1).value = nm
                 ws_branchMain.cell(row=r, column=2).value = regno
                 ws_branchMain.cell(row=r, column=3).value = ws.cell(
-                    row=p, column=2).value
-                ws_branchMain.cell(row=r, column=4).value = ws.cell(
                     row=p, column=4).value
+                ws_branchMain.cell(row=r, column=4).value = ws.cell(
+                    row=p, column=7).value
                 ws_branchMain.cell(row=r, column=5).value = ws.cell(
-                    row=p, column=5).value[-9:-3:1]
+                    row=p, column=8).value[-9:-3:1]
                 r += 1
         codeno = regno[5:7]
         # print(ws_branchMain.max_row,codeno)

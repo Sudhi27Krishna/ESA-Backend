@@ -18,6 +18,10 @@ const RoomBookingSchema = new mongoose.Schema({
     rooms: {
         type: [String],
         required: [true, 'Please provide rooms'],
+    },
+    seats: {
+        type: Number,
+        required: [true, 'Please provide no of seats']
     }
 });
 

@@ -86,6 +86,8 @@ const createAllocation = async (req, res) => {
     if (!date || !time || !rooms || !details) {
         return res.status(400).json({ 'message': 'provide date, time and rooms' });
     }
+    const totalCapacity = rooms.reduce((total, obj) => total + obj.capacity, 0);
+    console.log("here", totalCapacity);
     const formattedDate = date.split('-').reverse().join('-');
     const dateObject = new Date(formattedDate).toISOString();
     //console.log(dateObject)
@@ -103,6 +105,7 @@ const createAllocation = async (req, res) => {
                 date: dateObject,
                 time,
                 rooms,
+                seats: totalCapacity
             });
 
             await newAllocation.save();
@@ -111,14 +114,14 @@ const createAllocation = async (req, res) => {
             const roomNumbers = rooms.map((room) => room.room_no);
 
             // Creating the rooms booked for a particular date
-            await RoomBooking.create({ user: req.user.username, date: dateObject, time, rooms: roomNumbers });
+            await RoomBooking.create({ user: req.user.username, date: dateObject, time, rooms: roomNumbers, seats: totalCapacity });
 
             // Return the newly created exam document or any other relevant data
-            res.status(201).json({ message: 'Allocation created successfully', Allocation: newAllocation });
+            res.status(201).json({ "message": 'Allocation created successfully', "Allocation": newAllocation });
         }
         else {
             // If no matching schedule document is found, return an appropriate error message
-            res.status(404).json({ error: 'No schedule found for the given date and time' });
+            res.status(404).json({ "error": 'No schedule found for the given date and time' });
         }
 
     } catch (error) {
@@ -139,7 +142,7 @@ const getRoomsBooked = async (req, res) => {
 
     try {
         const bookedRooms = await RoomBooking.findOne({ user, date: dateObject, time });
-        console.log(bookedRooms);
+        console.log("bokked rooms",bookedRooms);
         res.status(200).json(bookedRooms?.rooms);
     } catch (error) {
         return res.status(500).json({ 'message': error.message });
