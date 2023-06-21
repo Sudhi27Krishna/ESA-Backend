@@ -1,7 +1,6 @@
 const Schedule = require('../models/Schedule');
 const Room = require('../models/Room');
 const Allocations = require('../models/Allocations');
-const RoomBooking = require('../models/RoomBooking');
 const manipulate = require('../manipulate');
 const fs = require('fs');
 const path = require('path');
@@ -9,7 +8,7 @@ const nodemailer = require('nodemailer');
 const totalCount = require('../totalCount');
 
 const directoryPath = path.resolve(__dirname, '../updatedExcels');
-const fileNameRegex = /^[A-Za-z]+\.xlsx$/;
+const fileNameRegex = /^([0][1-9]|[12][0-9]|3[01])-([0][1-9]|[1][0-2])+-([0-9]{4})+_[FA]N\.xlsx$/;
 
 const getDates = async (req, res) => {
     const user = req.user.username;
@@ -52,6 +51,7 @@ const getExams = async (req, res) => {
 
         if (exams?.length === 0) {
             exams.push("No exams scheduled");
+            return res.status(200).json({ exams, details: null, totalStudents: 0 });
         }
         const details = schedules.map(({ sem, branch, slot, subcode }) => {
             return { sem, branch, slot, subcode };
@@ -85,6 +85,8 @@ const createAllocation = async (req, res) => {
     if (!date || !time || !rooms || !details) {
         return res.status(400).json({ 'message': 'provide date, time and rooms' });
     }
+    const totalCapacity = rooms.reduce((total, obj) => total + obj.capacity, 0);
+    console.log("here", totalCapacity);
     const formattedDate = date.split('-').reverse().join('-');
     const dateObject = new Date(formattedDate).toISOString();
     //console.log(dateObject)
@@ -102,48 +104,23 @@ const createAllocation = async (req, res) => {
                 date: dateObject,
                 time,
                 rooms,
+                seats: totalCapacity
             });
 
             await newAllocation.save();
 
-
-            const roomNumbers = rooms.map((room) => room.room_no);
-
-            // Creating the rooms booked for a particular date
-            await RoomBooking.create({ user: req.user.username, date: dateObject, time, rooms: roomNumbers });
-
             // Return the newly created exam document or any other relevant data
-            res.status(201).json({ message: 'Allocation created successfully', Allocation: newAllocation });
+            res.status(201).json({ "message": 'Allocation created successfully', "Allocation": newAllocation });
         }
         else {
             // If no matching schedule document is found, return an appropriate error message
-            res.status(404).json({ error: 'No schedule found for the given date and time' });
+            res.status(404).json({ "error": 'No schedule found for the given date and time' });
         }
 
     } catch (error) {
         return res.status(500).json({ 'message': error.message });
     }
 };
-
-const getRoomsBooked = async (req, res) => {
-    const { date, time } = req.query;
-    const user = req.user.username;
-
-    if (!date) {
-        return res.status(400).json({ 'message': 'Provide date' });
-    }
-
-    const formattedDate = date.split('-').reverse().join('-');
-    const dateObject = new Date(formattedDate).toISOString();
-
-    try {
-        const bookedRooms = await RoomBooking.findOne({ user, date: dateObject, time });
-        console.log(bookedRooms);
-        res.status(200).json(bookedRooms?.rooms);
-    } catch (error) {
-        return res.status(500).json({ 'message': error.message });
-    }
-}
 
 const getAllocation = async (req, res) => {
     const { date, time } = req.query;
@@ -155,9 +132,10 @@ const getAllocation = async (req, res) => {
     try {
         const formattedDate = date.split('-').reverse().join('-');
         const dateObject = new Date(formattedDate).toISOString();
-        const allocations = await Allocations.find(user, { date: dateObject, time: time }).select('rooms').lean();
-        const rooms = allocations.flatMap(allocation => allocation.rooms);
-        return res.status(200).json(rooms);
+        const allocations = await Allocations.find({ user, date: dateObject, time: time }).select('rooms seats').lean();
+        const rooms = allocations?.flatMap(allocation => allocation.rooms.map(item => item.room_no));
+        const seatSelected = allocations.length === 0 ? 0 : allocations[0].seats;
+        return res.status(200).json({ rooms, seats: seatSelected });
     }
     catch (error) {
         return res.status(500).json({ 'message': error.message });
@@ -168,20 +146,14 @@ const sendExcels = async (req, res) => {
     const email = req.user.email;
 
     try {
-        /*
+
         // Read the contents of the directory
         const files = await fs.promises.readdir(directoryPath);
+        console.log(files);
 
         if (files.length === 0) {
             return res.status(404).json({ message: 'No files found in the directory' });
         }
-
-        // Delete files matching the regex pattern
-        const regex = new RegExp(fileNameRegex);
-        const deletedFiles = files.filter((file) => regex.test(file));
-        await Promise.all(deletedFiles.map((file) => fs.promises.unlink(path.join(directoryPath, file))));
-
-        */
 
         // Create a Nodemailer transporter
         const transporter = nodemailer.createTransport({
@@ -195,12 +167,11 @@ const sendExcels = async (req, res) => {
 
         const attachments = files.map((file) => {
             const filePath = path.join(directoryPath, file);
-            if (fs.existsSync(filePath)) {
+            if (fs.existsSync(filePath) && fileNameRegex.test(file)) {
                 return { path: filePath };
             }
             return null;
         }).filter((attachment) => attachment !== null);
-
 
         // Prepare the email message
         const mailOptions = {
@@ -224,27 +195,6 @@ const sendExcels = async (req, res) => {
 
         await sendMailPromise;
 
-        /*
-        // Delete the remaining files after the email is successfully sent
-        await Promise.all(files.map(async (file) => {
-            const filePath = path.join(directoryPath, file);
-            if (fs.existsSync(filePath)) {
-                await fs.promises.unlink(filePath);
-            }
-        }));
-
-        */
-
-        // const folderPath = path.join(__dirname, '../uploadedExcels');
-        // fs.rmdir(folderPath, { recursive: true }, (err) => {
-        //     if (err) {
-        //         console.error('Error deleting directory:', err);
-        //         return;
-        //     }
-
-        //     console.log('Directory deleted:', folderPath);
-        // });
-
         return res.status(200).json({ message: 'Email sent successfully' });
 
     } catch (error) {
@@ -253,4 +203,4 @@ const sendExcels = async (req, res) => {
     }
 }
 
-module.exports = { getExams, getRooms, getDates, createAllocation, getRoomsBooked, getAllocation, sendExcels };
+module.exports = { getExams, getRooms, getDates, createAllocation, getAllocation, sendExcels };
