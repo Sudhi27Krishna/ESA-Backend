@@ -7,7 +7,6 @@ router.get('/dates', seatAllocationController.getDates)
       .get('/get-rooms', seatAllocationController.getRooms) //get all rooms allocated for exams
       .post('/allocation', seatAllocationController.createAllocation) //add the room alloted for exam to DB
       .get('/get-allocation', seatAllocationController.getAllocation)
-      .get('/get-booked-rooms', seatAllocationController.getRoomsBooked)
       .get('/send-excels', seatAllocationController.sendExcels);
 
 module.exports = router;
