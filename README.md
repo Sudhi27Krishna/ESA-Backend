@@ -2,14 +2,9 @@
 
 
 1. Clone the repository
-2. cd into the file
-3. Type the command 
- 
-    ```
-    mkdir updatedExcels
-    ```
-4. To run the server type the command and press <kbd>Enter</kbd>
+2. cd into the cloned repository
+3. To run the server type the command and press <kbd>Enter</kbd>
   
     ```
-    npm run dev
+    npm i && npm run dev
     ```
