@@ -220,7 +220,7 @@ for i in slot_list:
             li.append('B'+str(i))
         r = 1
         for i in li:
-            room_sheet.cell(row=r, column=1).value = i
+            room_sheet.cell(row=r, column=2).value = i
             r += 1
         for i in range(len(rooms)):
             if ((room_sheet.max_row <= rooms[i].get("capacity"))):
