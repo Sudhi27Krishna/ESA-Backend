@@ -24,6 +24,8 @@ for sem in data:
     while None in branch_list:
         # removing None from list using remove method
         branch_list.remove(None)
+    if 'Branch Name' in branch_list:
+        branch_list.remove('Branch Name')
     print(branch_list)
     code_list = list()
     sub_list = list()

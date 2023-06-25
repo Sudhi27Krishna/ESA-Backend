@@ -1,6 +1,7 @@
 import openpyxl
 import math
 from openpyxl import Workbook
+from openpyxl.styles import Alignment 
 import sys
 import json
 
@@ -208,6 +209,7 @@ for i in slot_list:
     for j in sh_nm:
         room_sheet = wb_slot[j]
         room_sheet.insert_cols(idx=1)
+        room_sheet.insert_cols(idx=1)
         max_alloc1 = room_sheet.max_row//2
         max_alloc2 = room_sheet.max_row-max_alloc1
         wb_slot.save('.\\updatedExcels\\'+date+'_'+time+'.xlsx')
@@ -228,3 +230,37 @@ for i in slot_list:
                 wb_slot.save('.\\updatedExcels\\'+date+'_'+time+'.xlsx')
                 break
     wb_slot.save('.\\updatedExcels\\'+date+'_'+time+'.xlsx')
+
+    #BRANCH DIVISION IN EXCEL
+    sh_nm = wb_slot.sheetnames
+    del sh_nm[0]
+    del sh_nm[0]
+    for j in sh_nm:
+        room_sheet = wb_slot[j]
+        i=0;start=2;flag=0
+        room_sheet.insert_rows(idx=1)
+        room_sheet.cell(row=1,column=1,value='Branch')
+        room_sheet.cell(row=1,column=2,value='Seat No.')
+        room_sheet.cell(row=1,column=3,value='Sub. code')
+        room_sheet.cell(row=1,column=4,value='Reg. No')
+        br=room_sheet.cell(row=2, column=4).value[5:7]
+        for p in range(2,room_sheet.max_row+1):
+                    # print(room_sheet.cell(row=p, column=4).value[5:7])
+                    if(br!=room_sheet.cell(row=p, column=4).value[5:7] or p==room_sheet.max_row):
+                        if(p!=room_sheet.max_row):
+                            s='A'+str(start)+':A'+str(start+i-1)
+                        else:
+                            s='A'+str(start)+':A'+str(start+i)
+                        room_sheet.merge_cells(s)
+                        cell = room_sheet.cell(row=start,column=1)
+                        cell.value = br  
+                        cell.alignment = Alignment(horizontal='center', vertical='center')
+                        wb_slot.save('.\\updatedExcels\\'+date+'_'+time+'.xlsx')
+                        flag=1
+                    if(flag==1):    
+                        br=room_sheet.cell(row=p, column=4).value[5:7]
+                        start=p
+                        i=0
+                        flag=0
+                    i+=1
+        wb_slot.save('.\\updatedExcels\\'+date+'_'+time+'.xlsx')
