@@ -21,6 +21,13 @@ for i in range(len(details)):
     slot_set.add(details[i].get("slot"))
 slot_list = list(slot_set)
 
+print(rooms)
+no60=0;no30=0
+for i in range(len(rooms)):
+    if(rooms[i].get("capacity")==60):
+        no60+=1
+no30=len(rooms)-no60
+print(no60)
 
 for i in slot_list:
     input_slot = i
@@ -49,7 +56,7 @@ for i in slot_list:
             ws_branch_sply = wb_branch[input_slot+'_supply']
         except:
             check_supply = 0
-        check = ws_branch_reg.max_row-(ws_branch_reg.max_row % 15)
+        check = ws_branch_reg.max_row-(ws_branch_reg.max_row % 30)
         # NO: OF REGULAR STUDENTS THAT CAN BE PLACED IN ROOMS WHICH FITS EXACTLY 15 STUDENTS FROM SINGLE BRANCH i.e slot SHEET
         for r in range(1, check+1):
             # print(ws_branch_reg.max_row-r, ws_branch_reg.max_row, r, p, b, check)
@@ -76,13 +83,27 @@ for i in slot_list:
         wb_slot.save('.\\updatedExcels\\'+date+'_'+time+'.xlsx')
 
     # normal arrangement
-    for i in range(1, math.ceil(ws_slotMain.max_row/30)+1):
+    # for i in range(1, math.ceil(ws_slotMain.max_row/30)+1):
+    for i in range(1, no30+1):
         room_sheet = wb_slot.create_sheet('rno'+str(i))
     wb_slot.save('.\\updatedExcels\\'+date+'_'+time+'.xlsx')
     sh_nm = wb_slot.sheetnames
     del sh_nm[0]
     del sh_nm[0]
     max_sheets = len(sh_nm)
+    no30rem=math.ceil(ws_slotMain.max_row/30)-no30
+    print(no30rem)
+    # print(ws_slot_splyMain.max_row)
+    if no30rem>0:
+        b=ws_slot_splyMain.max_row+1
+        # print(ws_slotMain.cell(row=no30*30+1, column=1).value)
+        for i in range(no30*30+1,ws_slotMain.max_row+1):
+            ws_slot_splyMain.cell(row=b, column=1).value = ws_slotMain.cell(
+                row=i, column=1).value
+            ws_slot_splyMain.cell(row=b, column=2).value = ws_slotMain.cell(
+                row=i, column=2).value
+            b+=1
+        ws_slotMain.delete_rows(no30*30+1, ws_slotMain.max_row-1)
     j = 0
     p = 1
     ch = 0
@@ -111,12 +132,18 @@ for i in slot_list:
     # print(cnt)
     ch = 0
     # balance students to normal class
+    bal = ws_slot_splyMain.max_row
+    rem = bal % 15
     for j in range(max_sheets-1, 1, -1):
         room_sheet = wb_slot[sh_nm[j]]
+        if bal==rem:
+            gen=rem
+        else:
+            gen=15
         if (room_sheet.max_row == 15):
             # print("_________"+sh_nm[j]+"  "+str(room_sheet.max_row))
             p = 16
-            for r in range(1, 16):
+            for r in range(1, gen):
                 room_sheet.cell(row=p, column=1).value = ws_slot_splyMain.cell(
                     row=(ch*15+r), column=1).value
                 room_sheet.cell(row=p, column=2).value = ws_slot_splyMain.cell(
@@ -124,14 +151,15 @@ for i in slot_list:
                 p += 1
         else:
             break
+        bal-=15
         ch += 1
     wb_slot.save('.\\updatedExcels\\'+date+'_'+time+'.xlsx')
 
-    # balance students to drawing room OR NORMAL CLASSROOM
+    # balance students to drawing room 
     bal = ws_slot_splyMain.max_row-ch*15
     ch = ch*15
     rem = bal % 30
-    extra_rooms = (bal-rem)//30
+    extra_rooms = no60
     for i in range(max_sheets+1, max_sheets+extra_rooms+1):
         room_sheet = wb_slot.create_sheet('rno'+str(i))
     wb_slot.save('.\\updatedExcels\\'+date+'_'+time+'.xlsx')
@@ -139,69 +167,30 @@ for i in slot_list:
     j = -1
     p = 1
     ch = 0
-    for i in range(i1+1, ws_slot_splyMain.max_row-rem+1, 15):
+    for i in range(i1+1, ws_slot_splyMain.max_row+1, 30):
         room_sheet = wb_slot[wb_slot.sheetnames[j]]
-        for r in range(i, i+15):
+        if bal==rem:
+            gen=rem
+        else:
+            gen=30
+        print(gen,ch,i,i+gen,ch*30+i)
+        for r in range(i,i+gen):
             room_sheet.cell(row=p, column=1).value = ws_slot_splyMain.cell(
                 row=r, column=1).value
             room_sheet.cell(row=p, column=2).value = ws_slot_splyMain.cell(
                 row=r, column=2).value
             p += 1
+        bal-=30
         ch += 1
         if (ch >= extra_rooms):
-            p = 16
+            p = 31
         else:
             p = 1
         j = (ch) % extra_rooms
         j += 1
         j *= -1
         wb_slot.save('.\\updatedExcels\\'+date+'_'+time+'.xlsx')
-    bal = ws_slot_splyMain.max_row-rem
-    if rem >= 20:
-        room_sheet = wb_slot.create_sheet('new_room')
-        room_sheet = wb_slot['new_room']
-        p = 1
-        for r in range(bal+1, ws_slot_splyMain.max_row+1):
-            room_sheet.cell(row=p, column=1).value = ws_slot_splyMain.cell(
-                row=r, column=1).value
-            room_sheet.cell(row=p, column=2).value = ws_slot_splyMain.cell(
-                row=r, column=2).value
-            p += 1
-        wb_slot.save('.\\updatedExcels\\'+date+'_'+time+'.xlsx')
-    elif rem <= 10:
-        room_sheet = wb_slot[wb_slot.sheetnames[-1]]
-        p = 31
-        for r in range(bal+1, ws_slot_splyMain.max_row+1):
-            room_sheet.cell(row=p, column=1).value = ws_slot_splyMain.cell(
-                row=r, column=1).value
-            room_sheet.cell(row=p, column=2).value = ws_slot_splyMain.cell(
-                row=r, column=2).value
-            p += 1
-        wb_slot.save('.\\updatedExcels\\'+date+'_'+time+'.xlsx')
-    else:
-        rem_part1 = rem//2
-        p = 31
-        room_sheet = wb_slot[wb_slot.sheetnames[-1]]
-        for r in range(bal+1, ws_slot_splyMain.max_row-rem_part1+1):
-            room_sheet.cell(row=p, column=1).value = ws_slot_splyMain.cell(
-                row=r, column=1).value
-            room_sheet.cell(row=p, column=2).value = ws_slot_splyMain.cell(
-                row=r, column=2).value
-            p += 1
-        p = 31
-        room_sheet = wb_slot[wb_slot.sheetnames[-2]]
-        bal = r
-        for r in range(bal+1, ws_slot_splyMain.max_row+1):
-            room_sheet.cell(row=p, column=1).value = ws_slot_splyMain.cell(
-                row=r, column=1).value
-            room_sheet.cell(row=p, column=2).value = ws_slot_splyMain.cell(
-                row=r, column=2).value
-            p += 1
-        wb_slot.save('.\\updatedExcels\\'+date+'_'+time+'.xlsx')
-
-    wb_slot.save('.\\updatedExcels\\'+date+'_'+time+'.xlsx')
-    # print(wb_slot.sheetnames)
-
+    
     # RENAMING ROOMS
     sh_nm = wb_slot.sheetnames
     del sh_nm[0]
